@@ -142,4 +142,56 @@ via path:
 vault write sys/policy/[policy] policy=[policy_file.hcl]
 ```
 
+- entity_id?
+
 ## Managing client tokens
+
+### Tokens
+
+Include Policies and Metadata
+
+#### Types
+- Service Token
+    * More flexible token, 
+- Batch Token
+    * ligthweight 
+
+- There is also Token hierarchy, if 1 token at the top is removed, all children tokens are orphan
+- Token accessors, reads the metadata of the token but not the token itself.
+
+
+#### Response wrapping
+
+Combine responses and save them in a *cubbyhole* in order to generate a new Token which will grant you access to the resources. The client uses the 'new token' to talk with the *cubbyhole* and then from there, retrieves the information necessary.
+
+How to create it?
+
+* generate a 'normal' secret
+* retrieve the secret with *wrap-ttl* option
+
+```bash
+vault kv put secret/app-server api-key=5555
+```
+
+```bash
+# 300 in seconds
+vault get -wrap-ttl=300 secret/app-server
+```
+
+then you will get a *wrapped Token*, the next step is do a POST request with this token in order to retrieve the 'original' information
+
+POST -> VAULT_ADDR/v1/sys/wrapping/unwrap
+
+## Installation
+
+TODO
+
+
+## Auditing
+
+log types request and responses, available options are: json, syslog, socket
+
+```bash
+vault audit enable -path=vault_path [type]
+```
+
